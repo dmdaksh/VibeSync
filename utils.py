@@ -1,9 +1,44 @@
 import subprocess
-from preprocessing.gemini_video import *
+
+import json
+import argparse
+from pytube import YouTube
+
+from app.preprocessing.gemini_video import *
 
 def gemini_video_summary(video_url): 
     response = Video.call_gemini(video_url)
     return response
+
+from urllib.parse import urlparse, parse_qs
+
+def gemini_output_to_audio(yt_id, save_path="./app/static/app/audios"):
+
+    # videoPath = "https://www.youtube.com/watch?v=" + videoId
+    # videoPath = "https://www.youtube.com/watch?v=-bzWSJG93P8"
+
+    video_path = "https://www.youtube.com/watch?v=" + yt_id
+    print(video_path)
+
+    #TODO: modify api to get multiple video links
+    # keep checking, until we get valid video link
+
+    try:
+        yt = YouTube(
+        video_path,
+        use_oauth=True,
+        allow_oauth_cache=True
+        )
+        stream_query = yt.streams.filter(only_audio=True)
+        stream_data = yt.streams.get_by_itag(stream_query[0].itag)
+
+        try:
+            audio_path = stream_data.download(output_path=save_path, filename = 'audio_'+yt_id+'.mp3')
+            print(f"Successfully downloaded at :{audio_path}")
+        except:
+            print("Couldn't download audio file.")
+    except:
+        print("Some error occured. Use non age-restricted videos please.")
 
 def merge_audio_files():
     """
