@@ -1,5 +1,5 @@
 import subprocess
-from preprocessing.gemini_video import *
+from app.preprocessing.gemini_video import *
 
 def gemini_video_summary(video_url): 
     response = Video.call_gemini(video_url)
