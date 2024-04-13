@@ -17,7 +17,7 @@ YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]  # Instead of your actual secret
 
 
 def index(request):
-    return HttpResponse("<h1>This works</h1>")
+    return render(request, 'app/index.html')
 
 def get_youtube_link(request, search_query: str):
     video, created = YouTubeVideo.objects.get_or_create(search_query=search_query)
