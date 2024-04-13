@@ -12,24 +12,20 @@ def gemini_video_summary(video_url):
 
 from urllib.parse import urlparse, parse_qs
 
-def gemini_output_to_audio(json_path, save_path):
-    with open(json_path, "r", encoding="utf8") as j:
-        contents = json.loads(j.read())
-        # videoId = contents["items"][0]["id"]["videoId"]
-        videoPath = contents['video_link']
+def gemini_output_to_audio(yt_id, save_path="./app/static/app/audios"):
 
     # videoPath = "https://www.youtube.com/watch?v=" + videoId
     # videoPath = "https://www.youtube.com/watch?v=-bzWSJG93P8"
 
-    url_data = urlparse(videoPath)
-    query = parse_qs(url_data.query)
-    videoID_code = query["v"][0]
+    video_path = "https://www.youtube.com/watch?v=" + yt_id
+    print(video_path)
 
-    print(f"Extracted Video link: {videoID_code}")
+    #TODO: modify api to get multiple video links
+    # keep checking, until we get valid video link
 
     try:
         yt = YouTube(
-        videoPath,
+        video_path,
         use_oauth=True,
         allow_oauth_cache=True
         )
@@ -37,7 +33,7 @@ def gemini_output_to_audio(json_path, save_path):
         stream_data = yt.streams.get_by_itag(stream_query[0].itag)
 
         try:
-            audio_path = stream_data.download(output_path=save_path filename = 'audio_'+videoID_code+'.mp3')
+            audio_path = stream_data.download(output_path=save_path, filename = 'audio_'+yt_id+'.mp3')
             print(f"Successfully downloaded at :{audio_path}")
         except:
             print("Couldn't download audio file.")

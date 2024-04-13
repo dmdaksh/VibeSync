@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 import requests
 from .models import YouTubeVideo
+from utils import gemini_output_to_audio
 
 # Add .env variables anywhere before SECRET_KEY
 dotenv_file = os.path.join(".", ".env")
@@ -41,3 +42,9 @@ def get_youtube_link(request, search_query: str):
             return JsonResponse({"video_link": video_link})
         else:
             return JsonResponse({"error": "No results found"}, status=404)
+
+
+def get_yt_audio(request, yt_id: str):
+    save_path = "./app/static/app/audios"
+    gemini_output_to_audio(yt_id, save_path)
+    return HttpResponse("Audio extracted successfully!", status=200)
