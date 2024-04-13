@@ -1,0 +1,38 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load embed_video_tags %}
+
+{% block title %}Consent{% endblock %}
+
+{% block content %}
+<style>
+    /* Override Bootstrap's default carousel transition duration */
+    .carousel-item {
+      transition-duration: 0s; /* Change the transition duration to 1 second */
+    }
+
+    /* Custom styling */
+    .rounded-rectangle {
+        background-color: #e9f2f9; /* Light subtle color */
+        border-radius: 10px; /* Rounded corners */
+        padding: 20px; /* Padding inside the rectangle */
+        margin-top: 50px;
+    }
+</style>
+  
+<body>
+    <div class="container">
+        <h1 class="text-center pt-5">VibeSync: Enhance your videos!</h1>
+        <hr>
+        <div class="rounded-rectangle consent-text mb-5">
+            <p>a text</p>
+            <img src="{% static 'app/images/logo.png' %}" alt="Logo" width="100px" height="auto" class="d-inline-block align-text-top">
+        </div>
+        <div id="two-button-bar" class="d-flex justify-content-between align-items-center">
+            <button type="button" id="videoBtn" class="btn btn-secondary px-3 mb-5">Enter video</button> 
+        </div>
+    </div>
+</body>
+{% endblock %}
+{% block script %}
+{% endblock %}
