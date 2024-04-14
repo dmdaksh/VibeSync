@@ -43,8 +43,8 @@
     }
 </style>
 
-<div id="parent" class="container">
-    <h1 class="text-center pt-5" style="color: ;">VibeSync: Enhance your videos with audio!</h1>
+<div class="container">
+    <h1 class="text-center pt-5">VibeSync: Enhance your videos with audio!</h1>
     <hr>
     <!-- <div class="rounded-rectangle consent-text mb-5">
         <p>Welcome to Vibesync! Please enter your video to proceed</p>
@@ -53,7 +53,7 @@
     <div class="d-flex flex-row justify-content-center mx-lg-auto max-lg-w-2xl max-xl-w-3xl">
         <form method="post" id="id_videoform" enctype="multipart/form-data">
         {% csrf_token %}
-            <div class="d-flex w-full align-items-center">
+            <div id="parent" class="d-flex w-full align-items-center">
                 <div class="input-group mt-5 d-flex w-full align-items-center">
                     <!-- Input for file upload, with specific acceptance for video files -->
                     <input id="video" type="file" class="form-control flex-grow-1" style="min-width: 500px;"
@@ -62,10 +62,11 @@
                     <button id="submitVideo" type="button" class="btn btn-outline-primary">
                         <i class="bi bi-camera-video" id="submitButton" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload video"></i> Submit Video
                     </button>
-                    {{ form.file }}
-                    <!-- Uncomment below if you need a Save button with additional functionality -->
-                    <!-- <button id="saveBtn" type="button" class="btn btn-primary" onclick="submitReport()">Save</button> -->
                 </div>
+                <p id="system_message_1" style="display: none;">Understanding the image...</p>
+                <p id="system_message_2" style="display: none;">Understood. Now, looking for suitable audio...</p>
+                <p id="system_message_3" style="display: none;">Done! Working my editing magic now...</p>
+                <p id="system_message_4" style="display: none;">Ta-da! Here's the final outcome.</p>
             </div>
         </form>
         <div id="videoContainer"></div>
@@ -80,11 +81,13 @@
 {% block script %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+let video_count = 0;
 document.addEventListener('DOMContentLoaded', function(){
-    
+
     document.getElementById('submitVideo').addEventListener("click", function(event) {
         event.preventDefault(); // prevent default submit behavior
         console.log("video saved");
+        document.getElementById('system_message_1').style.display = "block"; 
         var post_url = window.location.href;
         var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
         var fileInput = document.getElementById('video');
@@ -112,14 +115,13 @@ document.addEventListener('DOMContentLoaded', function(){
                 console.log("Video uploaded successfully");
                 document.getElementById('submitVideo').style.display = "none";
                 document.getElementById('video').style.display = "none";
-
-                var videoContainer = document.getElementById('videoContainer');
-                if (!videoContainer) {
-                    videoContainer = document.createElement('div');
-                    videoContainer.id = 'videoContainer';
-                    document.body.appendChild(videoContainer);
-                }
-                console.log(response.fileUrl)
+                document.getElementById('system_message_1').style.display = "none"; 
+                document.getElementById('system_message_2').style.display = "block"; 
+                videoContainer = document.createElement('div');
+                videoContainer.id = 'videoContainer_' + video_count;
+                video_count = video_count++;
+                document.getElementById('parent').appendChild(videoContainer);
+                
                 // Create and append the video element
                 var video = document.createElement('video');
                 video.src = "{% static 'app/videos' %}" + response.fileUrl;
@@ -152,7 +154,8 @@ document.addEventListener('DOMContentLoaded', function(){
         var loader = document.createElement('div');
         loader.className = "loader";
         document.getElementById('parent').appendChild(loader);
-
+        document.getElementById('system_message_2').style.display = "block";
+        document.getElementById('system_message_3').style.display = "hidden";
         var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
         var post_url = window.location.href;
         var postData = {
@@ -168,11 +171,11 @@ document.addEventListener('DOMContentLoaded', function(){
             success: function(response) {
                 // document.getElementsByClassName("loader").rem
                 var geminiResponse = document.createElement('div');
-                geminiResponse.innerHTML = `<p>Gemini has done it's job. Now waiting for the rest...</p>`;
+                document.getElementById('system_message_1').style.display = "hidden";
+                document.getElementById('system_message_2').style.display = "block";
                 document.getElementsByClassName('loader')[0].remove();
                 document.getElementById('parent').appendChild(geminiResponse);
 
-                // youtubeSearch(response.text);
                 youtubeSearch(response.gemini_json)
             },
             error: function(xhr, status, error) {
@@ -194,8 +197,9 @@ document.addEventListener('DOMContentLoaded', function(){
         var post_url = "{% url 'app:get_yt_link' %}"
         // serialize geminiJson
         geminiJson = JSON.stringify(geminiJson);
+        document.getElementById('system_message_2').style.display = "hidden";
+            document.getElementById('system_message_3').style.display = "block";
         var postData = {
-            // 'requestType': 'search',
             'gemini_response': geminiJson,
             csrfmiddlewaretoken: csrfToken
         };
@@ -206,8 +210,32 @@ document.addEventListener('DOMContentLoaded', function(){
             url: post_url, // Replace with your server endpoint URL
             data: postData,
             success: function(response) {
-                // document.getElementsByClassName("loader").rem
-                // alert("Great success");
+                document.getElementsByClassName('loader')[0].remove();
+                
+                // display file in frontend
+                videoContainer = document.createElement('div');
+                videoContainer.id = 'videoContainer_' + video_count;
+                video_count = video_count++;
+                document.getElementById('parent').appendChild(videoContainer);
+
+                // Create and append the video element
+                var video = document.createElement('video');
+                outputVideoUrl = "{% static 'app/videos' %}" + "/video_output.mp4";
+                console.log(outputVideoUrl)
+                video.src = outputVideoUrl
+                video.width = 320;
+                video.height = 240;
+                video.controls = true;
+                video.autoplay = true;  // Optional: play as soon as loaded
+
+                // add new video
+                videoContainer.innerHTML = '';
+                videoContainer.appendChild(video);
+
+                // show the forms again, but at the bottom 
+                // document.getElementById('submitVideo').style.display = "block";
+                // document.getElementById('video').style.display = "block";
+
             },
             error: function(xhr, status, error) {
                 // Handle error response
@@ -215,9 +243,39 @@ document.addEventListener('DOMContentLoaded', function(){
                 console.log("ERROR");
             }
         });
-
-
     }
+
+    // function displayVideo(outputFileUrl){
+    //     document.getElementsByClassName('loader')[0].remove();
+
+    //     var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+    //     var post_url = "{% url 'app:get_yt_link' %}"
+    //     // serialize geminiJson
+    //     geminiJson = JSON.stringify(geminiJson);
+    //     var postData = {
+    //         // 'requestType': 'search',
+    //         'gemini_response': geminiJson,
+    //         csrfmiddlewaretoken: csrfToken
+    //     };
+    //     console.log(postData)
+    //     // call yt search api
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: post_url, // Replace with your server endpoint URL
+    //         data: postData,
+    //         success: function(response) {
+    //             // document.getElementsByClassName("loader").rem
+    //             // alert("Great success");
+    //         },
+    //         error: function(xhr, status, error) {
+    //             // Handle error response
+    //             console.error(xhr.responseText);
+    //             console.log("ERROR");
+    //         }
+    //     });
+
+
+    // }
 
 });
 
