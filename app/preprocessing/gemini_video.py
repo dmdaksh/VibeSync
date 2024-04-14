@@ -15,14 +15,6 @@ GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 genai.configure(api_key=GEMINI_API_KEY)
 
 
-# video_file_name = "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
-file_url = (
-    "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
-)
-
-video_file_name = f"{file_url}"
-
-
 # Create or cleanup existing extracted image frames directory.
 FRAME_EXTRACTION_DIRECTORY = "../static/app/images/content/frames"
 FRAME_PREFIX = "_frame"

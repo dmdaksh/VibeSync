@@ -29,6 +29,10 @@ def index(request):
             if video_file:
                 fs = FileSystemStorage(location=os.path.join(settings.BASE_DIR, 'app/static/app/videos'))
                 # filename = fs.save(settings.MEDIA_ROOT \ video_file.name, video_file)
+                # if file exists, delete it
+                if os.path.exists(os.path.join(settings.BASE_DIR, 'app/static/app/videos', video_file.name)):
+                    os.remove(os.path.join(settings.BASE_DIR, 'app/static/app/videos', video_file.name))
+
                 filename = fs.save(video_file.name, video_file)
                 uploaded_file_url = fs.url(filename)
                 return JsonResponse({'message': 'Success', 'fileUrl': uploaded_file_url}, status=200)
