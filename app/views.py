@@ -11,7 +11,7 @@ import re
 import requests
 import logging
 from .models import YouTubeVideo
-from utils import gemini_output_to_audio, gemini_video_summary
+from utils import gemini_output_to_audio, gemini_video_summary, merge_audio_files
 
 logger = logging.getLogger(__name__)
 # Add .env variables anywhere before SECRET_KEY
@@ -132,11 +132,18 @@ def get_youtube_link(request):
                 youtube_urls[time_interval] = "No results found"
         
         youtube_urls = json.dumps(youtube_urls)
-        print(youtube_urls)
-        return JsonResponse({"youtube_urls": youtube_urls})
+        # print(youtube_urls)
+        # return JsonResponse({"youtube_urls": youtube_urls})
 
 
-def get_yt_audio(request, yt_id: str):
-    save_path = "./app/static/app/audios"
-    gemini_output_to_audio(yt_id, save_path)
-    return HttpResponse("Audio extracted successfully!", status=200)
+        save_path = "./app/static/app/audios"
+        # gemini_output_to_audio(yt_id, save_path)
+
+        timestamp_video = {}
+
+        for key, value in youtube_urls.items():
+            yt_id = value.split('=')[-1]
+            gemini_output_to_audio(yt_id, save_path)
+            timestamp_video[key] = f"audio_{yt_id}.mp3"
+        
+        return HttpResponse("Audio extracted successfully!", status=200)
