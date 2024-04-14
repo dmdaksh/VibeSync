@@ -40,6 +40,28 @@ def gemini_output_to_audio(yt_id, save_path="./app/static/app/audios"):
     except:
         print("Some error occured. Use non age-restricted videos please.")
 
+
+def remove_audio_from_video():
+
+    '''
+    -i input.mp4: This specifies the input file. Replace input.mp4 with the path to your video file.
+    -c:v copy: This option copies the video codec as is, without re-encoding the video stream.
+    -an: This option removes the audio stream from the video.
+    output.mp4: This is the name of the output file. The resulting video will have no audio.
+    '''
+
+    command = "ffmpeg -i ./app/static/app/videos/input.mp4 -c:v copy -an ./app/static/app/videos/output.mp4"
+    output = subprocess.run(
+          command,
+        shell=True,
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    print("Command output:", output.stdout)
+
+
 def merge_audio_files():
     """
     -i audio1.mp3 -i audio2.mp3: Specifies the input audio files.
