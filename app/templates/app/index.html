@@ -166,6 +166,7 @@ background: linear-gradient(circle, rgb(8, 112, 186) 0%, rgba(118,174,241,1) 100
 
 
 </style>
+ <link rel="stylesheet" href="https://cdn.plyr.io/3.7.2/plyr.css">
 
 <div id="parent" class="container">
     <img src="../../static/app/images/logo.png" alt="Logo" class="centered-image">
@@ -208,6 +209,8 @@ background: linear-gradient(circle, rgb(8, 112, 186) 0%, rgba(118,174,241,1) 100
 {% endblock %}
 {% block script %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.plyr.io/3.7.2/plyr.polyfilled.js"></script>
+
 <script>
 let video_count = 0;
 document.addEventListener('DOMContentLoaded', function(){
@@ -253,14 +256,18 @@ document.addEventListener('DOMContentLoaded', function(){
                 // Create and append the video element
                 var video = document.createElement('video');
                 video.src = "{% static 'app/videos' %}" + response.fileUrl;
-                video.width = 320;
-                video.height = 240;
+                video.width = 480;
+                video.height = 320;
                 video.controls = true;
                 video.autoplay = true;  // Optional: play as soon as loaded
 
                 // Clear previous videos if any and add new video
                 videoContainer.innerHTML = '';  
                 videoContainer.appendChild(video); 
+                const player = new Plyr('video', {captions: {active: true}});
+
+                // Expose player so it can be used from the console
+                window.player = player;
                 gemini(response.fileUrl);
                 // // add gemini api call
                 // var gemini = document.createElement('div');
