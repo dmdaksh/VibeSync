@@ -13,3 +13,6 @@ class AppConfig(AppConfig):
 
         if not os.path.exists("app/static/app/videos"):
             os.makedirs("app/static/app/videos")
+        
+        if not os.path.exists("app/static/app/output"):
+            os.makedirs("app/static/app/output")
