@@ -5,6 +5,7 @@
 {% block title %}Welcome{% endblock %}
 
 {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
 <style>
     #progress-report {
         height: 400px;
@@ -37,11 +38,43 @@
             transform: rotate(360deg);
         }
     }
+    .centered-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 110px; /* Adjust the width as needed */
+    height: 110px; /* Make height equal to the width to maintain aspect ratio */
+    border-radius: 50%; /* This creates the circular shape */
+    object-fit: cover; /* or any other percentage you see fit */
+}
+
+    h1{
+        color: #16dfdc;
+  font-size: 75px;
+  font-family: 'Lobster', cursive;
+    }
+    h2{
+        color: #353535;
+  font-size: 27px;
+        font-family: "Cormorant Garamond"
+    }
+    .small-button {
+    padding: 5px 10px; /* Adjust as needed */
+    font-size: 18px; /* Adjust as needed */
+    width: fit-content;
+}
+
 </style>
 
+
 <div class="container mt-5">
-    <h1 class="text-center pt-5">VibeSync: Enhance your videos with audio!</h1>
+    ⁠ <img src="../../static/app/images/logo.png" alt="Logo" class="centered-image">
+    <h1 class="text-center pt-5" style="color: ;">VibeSync</h1>
+    <h2 class="text-center pt-5" style="color: ;">Sync your videos with audio ✨🤘</h2>
     <hr>
+
+    <!-- <h1 class="text-center pt-5">VibeSync: Enhance your videos with audio!</h1> -->
+    <!-- <hr> -->
     <div class="d-flex flex-row justify-content-center mx-lg-auto max-lg-w-2xl max-xl-w-3xl"></div>
         <form method="post" id="id_videoform" enctype="multipart/form-data">
             {% csrf_token %}
@@ -57,25 +90,23 @@
                 </div>
         </form>
     </div>
-    <div class="row">
+    <!-- <div class="row"> -->
+        <div class="d-flex justify-content-center align-items-center">
+        <div class="container mt-5 p-4 mb-5 custom-border d-flex justify-content-center align-items-center full-height row">
+
         <!-- video 1 -->
         <div class="col-md-8" id="video_left">
         </div>
         <!-- video 2 -->
         <div class="col-md-4" id="video_right">
-            <!-- progress section -->
-            <!-- <div id="progress-report" class="mb-3"> -->
-                <!-- <div class="progress-step"></div> -->
-                <!-- <p id="system_message_1">Understanding the image...</p>
-                <p id="system_message_2">Understood. Now, looking for suitable audio...</p>
-                <p id="system_message_3">Done! Working my editing magic now...</p>
-                <p id="system_message_4">Ta-da! Here's the final outcome.</p> -->
-            <!-- </div> -->
-            
         </div>
+    <!-- <button type="button" id="submitBtn" class="btn btn-secondary px-3 mt-4" style="display: none;">New Video</button> -->
+    <!-- <button type="button" id="submitBtn" class="btn btn-secondary btn-sm px-3 mt-4" style="display: none;">New Video</button> -->
+    <!-- <button type="button" id="submitBtn" class="btn btn-secondary small-button px-3 mt-4" style="display: none;">New Video</button> -->
+    <button type="button" id="submitBtn" class="btn btn-secondary btn-sm small-button mt-4" style="display: none;">New Video</button>
     </div>
+        </div>
     <!-- submit button -->
-    <div id="submitBtn" class="button" style="display: none;"></div>
 </div>
 {% endblock %}
 {% block script %}
@@ -86,10 +117,32 @@ document.getElementById('submitBtn').onclick = function() {
 };
 // let video_count = 0;
 document.addEventListener('DOMContentLoaded', function(){
+    // let lastMessage = null; 
+
+    // function updateStatus() {
+    //     console.log("this function called");
+    //     console.log(lastMessage);
+    //     fetch("{% url 'app:get_status' %}")  // Adjust this URL to where your Django view is hosted
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             // document.getElementById('status').innerHTML = data.message;  // Displaying the status on the page
+    //             if (lastMessage !== data.message) {  // Check if the message has changed
+    //                 console.log(lastMessage);
+    //                 // update UI here
+    //                 lastMessage = data.message;  // Update the last message
+    //                 // document.getElementById('status').innerHTML = data.message;  // Update the HTML element only if there's a change
+    //             }
+    //             if (data.status !== 'complete') {
+    //                 setTimeout(updateStatus, 500);  // Continue polling if not complete
+    //             }
+    //         })
+    //         .catch(error => console.error('Error:', error));
+    // }
+
+    // updateStatus();
 
     document.getElementById('submitVideo').addEventListener("click", function(event) {
         event.preventDefault(); // prevent default submit behavior
-        console.log("video saved");
         var post_url = window.location.href;
         var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
         var fileInput = document.getElementById('video');

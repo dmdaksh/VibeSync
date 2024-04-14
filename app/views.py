@@ -22,6 +22,17 @@ if os.path.isfile(dotenv_file):
 # UPDATE secret key
 YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]  # Instead of your actual secret key
 
+task_status = {
+    "status_code": 400,
+    "message": "Initialised task status"
+}
+
+def update_task_status(code, message):
+    task_status['status_code'] = code
+    task_status['message'] = message
+
+def get_status(request):
+    return JsonResponse(task_status)
 
 def index(request):
     if request.method == "POST":
@@ -64,8 +75,14 @@ def index(request):
                 print(json_str)
                 print('\n\n')
                 gemini_json = json.loads(json_str)
+
+                update_task_status(200, "Gemini response successfully processed")
+                
                 return JsonResponse({'message': 'Success', 'gemini_json': gemini_json}, status=200)
             else:
+
+                update_task_status(400, "Error in processing gemini response")
+
                 return JsonResponse({'message': 'File not found in server'}, status=400)
             
         # elif request_type == "displayOutput":
@@ -105,6 +122,8 @@ def get_youtube_link(request):
         # print(youtube_urls)
         # return JsonResponse({"youtube_urls": youtube_urls})
 
+        update_task_status(200, "Suggesting audio choices..")
+
 
         save_path = "./app/static/app/audios"
         # gemini_output_to_audio(yt_id, save_path)
@@ -126,10 +145,14 @@ def get_youtube_link(request):
             # timestamp_video[key] = f"audio_{yt_id}.mp3"
             timestamp_video[key] = os.path.join(save_path, f"audio_{yt_id}.mp3")
         
+        # update_task_status(200, "Audio files successfully extracted")
         
-
+        update_task_status(200, "Mixing video and audio..")
+        
         process_and_concatenate_audios(timestamp_video)
 
-        output_file_path = merge_audio_video()
+        merge_audio_video()
+
+        update_task_status(200, "Done!")
         
         return JsonResponse({'message': 'Success'}, status=200)
