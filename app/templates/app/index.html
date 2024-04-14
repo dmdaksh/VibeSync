@@ -5,6 +5,9 @@
 {% block title %}Welcome{% endblock %}
 
 {% block content %}
+
+<!-- <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet"> -->
+<link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet"> 
 <style>
     /* Override Bootstrap's default carousel transition duration */
     .carousel-item {
@@ -41,16 +44,141 @@
         transform: rotate(360deg);
     }
     }
+    .centered-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px; /* Adjust the width as needed */
+    height: 200px; /* Make height equal to the width to maintain aspect ratio */
+    border-radius: 50%; /* This creates the circular shape */
+    object-fit: cover; /* or any other percentage you see fit */
+}
+
+    h1{
+        color: #16dfdc;
+  font-size: 120px;
+  font-family: 'Lobster', cursive;
+    }
+    h2{
+        color: #353535;
+  font-size: 50px;
+        font-family: "Cormorant Garamond"
+    }
+
+    .custom-btn {
+  width: 130px;
+  height: 40px;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px 25px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+   box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5),
+   7px 7px 20px 0px rgba(0,0,0,.1),
+   4px 4px 5px 0px rgba(0,0,0,.1);
+  outline: none;
+}
+
+/* 6 */
+.btn-6 {
+  background: rgb(21, 186, 227);
+background: linear-gradient(circle, rgb(8, 112, 186) 0%, rgba(118,174,241,1) 100%);
+  line-height: 42px;
+  padding: 0;
+  border: none;
+}
+.btn-6 span {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.btn-6:before,
+.btn-6:after {
+  position: absolute;
+  content: "";
+  height: 0%;
+  width: 1px;
+ box-shadow:
+   -1px -1px 20px 0px rgba(255,255,255,1),
+   -4px -4px 5px 0px rgba(255,255,255,1),
+   7px 7px 20px 0px rgba(0,0,0,.4),
+   4px 4px 5px 0px rgba(0,0,0,.3);
+}
+.btn-6:before {
+  right: 0;
+  top: 0;
+  transition: all 500ms ease;
+}
+.btn-6:after {
+  left: 0;
+  bottom: 0;
+  transition: all 500ms ease;
+}
+.btn-6:hover{
+  background: transparent;
+  color: #76aef1;
+  box-shadow: none;
+}
+.btn-6:hover:before {
+  transition: all 500ms ease;
+  height: 100%;
+}
+.btn-6:hover:after {
+  transition: all 500ms ease;
+  height: 100%;
+}
+.btn-6 span:before,
+.btn-6 span:after {
+  position: absolute;
+  content: "";
+  box-shadow:
+   -1px -1px 20px 0px rgba(255,255,255,1),
+   -4px -4px 5px 0px rgba(255,255,255,1),
+   7px 7px 20px 0px rgba(0,0,0,.4),
+   4px 4px 5px 0px rgba(0,0,0,.3);
+}
+.btn-6 span:before {
+  left: 0;
+  top: 0;
+  width: 0%;
+  height: .5px;
+  transition: all 500ms ease;
+}
+.btn-6 span:after {
+  right: 0;
+  bottom: 0;
+  width: 0%;
+  height: .5px;
+  transition: all 500ms ease;
+}
+.btn-6 span:hover:before {
+  width: 100%;
+}
+.btn-6 span:hover:after {
+  width: 100%;
+}
+
+
 </style>
 
 <div id="parent" class="container">
-    <h1 class="text-center pt-5" style="color: ;">VibeSync: Enhance your videos with audio!</h1>
+    <img src="../../static/app/images/logo.png" alt="Logo" class="centered-image">
+    <h1 class="text-center pt-5" style="color: ;">VibeSync</h1>
+    <h2 class="text-center pt-5" style="color: ;">Enhance your videos with audio!</h2>
     <hr>
     <!-- <div class="rounded-rectangle consent-text mb-5">
         <p>Welcome to Vibesync! Please enter your video to proceed</p>
     </div> -->
     <!-- <img src="{% static 'app/images/logo.png' %}" alt="Logo" width="200px" height="auto" class="d-inline-block justify-content-center align-text-top"> -->
+    
     <div class="d-flex flex-row justify-content-center mx-lg-auto max-lg-w-2xl max-xl-w-3xl">
+        
         <form method="post" id="id_videoform" enctype="multipart/form-data">
         {% csrf_token %}
             <div class="d-flex w-full align-items-center">
@@ -60,8 +188,8 @@
                     <input id="video" type="file" class="form-control flex-grow-1" style="min-width: 500px;"
                             accept="video/*" aria-label="Upload video" placeholder="Upload video here...">
                     <!-- Button to trigger the file upload action -->
-                    <button id="submitVideo" type="button" class="btn btn-outline-primary">
-                        <i class="bi bi-camera-video" id="submitButton" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload video"></i> Submit Video
+                    <button id="submitVideo" type="button" class="custom-btn btn-6">
+                        <i class="bi bi-camera-video" id="submitButton" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload video"></i> <b>Submit Video</b> 
                     </button>
                     {{ form.file }}
                     <!-- Uncomment below if you need a Save button with additional functionality -->
