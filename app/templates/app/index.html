@@ -18,9 +18,32 @@
         padding: 20px; /* Padding inside the rectangle */
         margin-top: 50px;
     }
+    .loader {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3B71CA;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    50% {
+        transform: rotate(300deg);
+    }
+    66% {
+        transform: rotate(270deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+    }
 </style>
 
-<div class="container">
+<div id="parent" class="container">
     <h1 class="text-center pt-5" style="color: ;">VibeSync: Enhance your videos with audio!</h1>
     <hr>
     <!-- <div class="rounded-rectangle consent-text mb-5">
@@ -46,6 +69,11 @@
             </div>
         </form>
         <div id="videoContainer"></div>
+        <!-- <div id="gemini">
+            <button id="submitRequest" type="button" class="btn btn-outline-primary">
+                 Submit Video
+            </button>
+        </div> -->
     </div>
 </div>
 {% endblock %}
@@ -62,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function(){
         var fileInput = document.getElementById('video');
 
         if (fileInput.files.length !== 1) {
-            alert("Please upload a video file.");
+            alert("Please upload a video file. (Limit 1)");
             return; // Stop the function if not exactly one file is uploaded
         }
 
@@ -71,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function(){
         console.log(formData);
         formData.append('video', videoFile); 
         formData.append('csrfmiddlewaretoken', csrfToken); 
+        formData.append('requestType', 'upload');
 
         // Submit the form data via AJAX
         $.ajax({
@@ -90,9 +119,10 @@ document.addEventListener('DOMContentLoaded', function(){
                     videoContainer.id = 'videoContainer';
                     document.body.appendChild(videoContainer);
                 }
+                console.log(response.fileUrl)
                 // Create and append the video element
                 var video = document.createElement('video');
-                video.src = response.fileUrl;
+                video.src = "{% static 'app/videos' %}" + response.fileUrl;
                 video.width = 320;
                 video.height = 240;
                 video.controls = true;
@@ -100,7 +130,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 // Clear previous videos if any and add new video
                 videoContainer.innerHTML = '';  
-                videoContainer.appendChild(video);
+                videoContainer.appendChild(video); 
+                gemini(response.fileUrl);
+                // // add gemini api call
+                // var gemini = document.createElement('div');
+                // gemini.appendChild('')
+                // parent.appendChild();
             },
             error: function(xhr, status, error) {
                 // Handle error response
@@ -113,7 +148,39 @@ document.addEventListener('DOMContentLoaded', function(){
 
     });
 
+    function gemini(fileUrl){
+        var loader = document.createElement('div');
+        loader.className = "loader";
+        document.getElementById('parent').appendChild(loader);
 
+        var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        var post_url = window.location.href;
+        var postData = {
+            'requestType': 'gemini',
+            'file_url': fileUrl,
+            csrfmiddlewaretoken: csrfToken
+        };
+        // call gemini api
+        $.ajax({
+            type: 'POST',
+            url: post_url, // Replace with your server endpoint URL
+            data: postData,
+            success: function(response) {
+                // document.getElementsByClassName("loader").rem
+                var geminiResponse = document.createElement('div');
+                geminiResponse.innerHTML = `<p>${response.text}</p>`;
+                document.getElementsByClassName('loader')[0].remove();
+                document.getElementById('parent').appendChild(geminiResponse)
+            },
+        error: function(xhr, status, error) {
+            // Handle error response
+            console.error(xhr.responseText);
+            console.log("ERROR");
+            document.getElementById('submitVideo').style.display = "block";
+            document.getElementById('video').style.display = "block";
+        }
+    });
+    }
 });
 
 </script>

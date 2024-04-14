@@ -1,13 +1,16 @@
-
-# !pip install -U -q google-generativeai
-
 import google.generativeai as genai
 import cv2
+import dotenv
 import os
 import shutil
 
-GOOGLE_API_KEY="API_KEY"
-genai.configure(api_key=GOOGLE_API_KEY)  
+# Add .env variables anywhere before SECRET_KEY
+dotenv_file = os.path.join(".", ".env")
+if os.path.isfile(dotenv_file):
+    dotenv.load_dotenv(dotenv_file)
+
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+genai.configure(api_key=GEMINI_API_KEY)
 
 
 # video_file_name = "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
@@ -81,14 +84,13 @@ class Video:
     # Make the LLM request.
     request = Video.make_request(prompt, uploaded_files)
     response = model.generate_content(request,request_options={"timeout": 600})
-    print(response.text)
 
     print(f'Deleting {len(uploaded_files)} images. This might take a bit...')
     for file in uploaded_files:
       genai.delete_file(file.response.name)
       print(f'Deleted {file.file_path} at URI {file.response.uri}')
     print(f"Completed deleting files!\n\nDeleted: {len(uploaded_files)} files")
-    return response
+    return response.text
       
 
 class File:
