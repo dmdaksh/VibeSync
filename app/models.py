@@ -9,3 +9,4 @@ class Video(models.Model):
 class YouTubeVideo(models.Model):
     video_link = models.URLField()
     search_query = models.CharField(max_length=255)
+    file_name = models.CharField(max_length=250)

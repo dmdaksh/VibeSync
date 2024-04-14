@@ -1,10 +1,12 @@
 import os
-
+import json
 import dotenv  # <- New
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
 from VibeSync import settings
+
+import re
 
 import requests
 import logging
@@ -45,9 +47,26 @@ def index(request):
             if file_url != '':
                 video_path = os.path.join(settings.BASE_DIR, f'app/static/app/videos{file_url}')
                 gemini_response = gemini_video_summary(video_path)
+                print(type(gemini_response))
                 return JsonResponse({'message': 'Success', 'text': gemini_response}, status=200)
             else:
                 return JsonResponse({'message': 'File not found in server'}, status=400)
+
+        elif request_type == "search":
+            youtube_urls = []
+            raw_string = request.POST.get('json', '')
+            if raw_string.lower().startswith("json"):
+                json_string = raw_string[4:].strip()
+            else:
+                json_string = raw_string
+            print(json_string)
+            song_timestamp_json = json.loads(json_string)
+            for entry in song_timestamp_json:
+                time_interval = entry['time_interval']
+                song_details = entry['song_options'][0]['song_name'] + " " + entry['song_options'][1]['song_artist']
+                youtube_urls.append(get_youtube_link(request, song_details))
+            print(youtube_urls)
+
 
 
 
