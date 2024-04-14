@@ -24,7 +24,7 @@ YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]  # Instead of your actual secret
 
 task_status = {
     "status_code": 400,
-    "message": "Initialised task status" 
+    "message": "Initialised task status"
 }
 
 def update_task_status(code, message):
@@ -122,7 +122,7 @@ def get_youtube_link(request):
         # print(youtube_urls)
         # return JsonResponse({"youtube_urls": youtube_urls})
 
-        update_task_status(200, "Successfully fetched youtube links")
+        update_task_status(200, "Suggesting audio choices..")
 
 
         save_path = "./app/static/app/audios"
@@ -145,15 +145,14 @@ def get_youtube_link(request):
             # timestamp_video[key] = f"audio_{yt_id}.mp3"
             timestamp_video[key] = os.path.join(save_path, f"audio_{yt_id}.mp3")
         
-        update_task_status(200, "Audio files successfully extracted")
+        # update_task_status(200, "Audio files successfully extracted")
         
-
+        update_task_status(200, "Mixing video and audio..")
+        
         process_and_concatenate_audios(timestamp_video)
-
-        update_task_status(200, "Audio files successfully concatenated")
 
         merge_audio_video()
 
-        update_task_status(200, "Audio and video successfully merged")
+        update_task_status(200, "Done!")
         
         return JsonResponse({'message': 'Success'}, status=200)

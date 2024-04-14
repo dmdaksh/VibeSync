@@ -124,4 +124,4 @@ def merge_audio_video():
     
     # Merge the audio and video
     ffmpeg.concat(input_video, input_audio, v=1, a=1).output(save_path).run() 
-    return save_path
+    return None
