@@ -67,48 +67,12 @@ def index(request):
                 return JsonResponse({'message': 'Success', 'gemini_json': gemini_json}, status=200)
             else:
                 return JsonResponse({'message': 'File not found in server'}, status=400)
-
-        # elif request_type == "search":
-        #     youtube_urls = []
-        #     raw_string = request.POST.get('json', '')
-        #     json_str = raw_string.replace("```json", "").replace("```", "")
-        #     # if raw_string.lower().startswith("json"):
-        #     #     json_string = raw_string[4:].strip()
-        #     # else:
-        #     #     json_string = raw_string
-        #     print(json_str)
-        #     song_timestamp_json = json.loads(json_str)
-        #     # for entry in song_timestamp_json:
-        #     #     time_interval = entry['time_interval']
-        #     #     song_details = entry['song_options'][0]['song_name'] + " " + entry['song_options'][1]['song_artist']
-        #     #     # youtube_urls.append(get_youtube_link(request, song_details))
-        #     # print(youtube_urls)
-        #     return JsonResponse({'message': 'Success', 'text': song_timestamp_json}, status=200)
+            
+        # elif request_type == "displayOutput":
+        #     pass
+            # save to db
 
     return render(request, 'app/index.html')
-
-# def get_youtube_link(request, search_query: str):
-#     # video, created = YouTubeVideo.objects.get_or_create(search_query=search_query)
-#     if not created:
-#         return JsonResponse({"video_link": video.video_link})
-#     else:
-#         base_url = "https://www.googleapis.com/youtube/v3/search"
-#         params = {
-#             "part": "snippet",
-#             "q": search_query,
-#             "type": "video",
-#             "key": YOUTUBE_API_KEY,
-#         }
-#         response = requests.get(base_url, params=params)
-#         data = response.json()
-#         if data["items"]:
-#             video_id = data["items"][0]["id"]["videoId"]
-#             video_link = f"https://www.youtube.com/watch?v={video_id}"
-#             video.video_link = video_link
-#             video.save()
-#             return JsonResponse({"video_link": video_link})
-#         else:
-#             return JsonResponse({"error": "No results found"}, status=404)
 
 def get_youtube_link(request):
     youtube_urls = {}
@@ -166,6 +130,6 @@ def get_youtube_link(request):
 
         process_and_concatenate_audios(timestamp_video)
 
-        merge_audio_video()
+        output_file_path = merge_audio_video()
         
-        return HttpResponse("Audio extracted successfully!", status=200)
+        return JsonResponse({'message': 'Success'}, status=200)
