@@ -7,7 +7,7 @@ from pytube import YouTube
 from app.preprocessing.gemini_video import Video
 
 from app.constants import SYSTEM_INSTRUCTION
-
+import ffmpeg
 
 
 
@@ -46,52 +46,52 @@ def gemini_output_to_audio(yt_id, save_path="./app/static/app/audios"):
         print("Some error occured. Use non age-restricted videos please.")
 
 
-def merge_audio_files():
+def process_and_concatenate_audios(time_audio_dict, output_file):
     """
-    -i audio1.mp3 -i audio2.mp3: Specifies the input audio files.
-    [0:a]afade=t=out:st=10:d=5[aud1]: Applies a fade out to the first audio at 10 seconds lasting 5 seconds.
-    [1:a]afade=t=in:st=0:d=5[aud2]: Applies a fade in to the second audio at the start lasting 5 seconds.
-    [aud1][aud2]concat=n=2:v=0:a=1[audio]: Concatenates the two audio streams into one.
-    output_audio.mp3: The resulting audio file with a smooth transition.
+    Crop each audio file according to the specified time steps and concatenate them.
+
+    Args:
+    time_audio_dict (dict): A dictionary with keys as time ranges in 'start-end' format (seconds)
+                            and values as paths to audio files.
+    output_file (str): Path to the output file to store the concatenated audio.
     """
+    # Prepare a list for storing individual audio segments
+    segments = []
+  
+    # Process each item in the dictionary
+    for time_range, audio_path in time_audio_dict.items():
+        start_time, end_time = map(int, time_range.split('-'))
+        
+        # Load the audio file and trim it according to the specified time range
+        audio_segment = ffmpeg.input(audio_path).audio.filter('atrim', start=0, end=end_time-start_time)
+        # Reset PTS to ensure correct concatenation
+        # audio_segment = audio_segment.filter('aresample','100')
+        audio_segment = audio_segment.filter('asetpts', 'PTS-STARTPTS')
+        segments.append(audio_segment)
 
-    command = "ffmpeg -i ./app/static/app/audios/audio1.mp3 -i ./app/static/app/audios/audio2.mp3 -filter_complex '[0:a]afade=t=out:st=10:d=5[aud1]; [1:a]afade=t=in:st=0:d=5[aud2]; [aud1][aud2]concat=n=2:v=0:a=1[audio]' -map '[audio]' ./app/static/app/audios/output_audio.mp3"
-    output = subprocess.run(
-        command,
-        shell=True,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    print("Command output:", output.stdout)
+    # Concatenate all audio segments
+    concatenated = ffmpeg.concat(*segments, v=0, a=1, unsafe=True)  # 'unsafe' is often required for different input streams
 
-    # os.system("ffmpeg -i audio1.mp3 -i audio2.mp3 -filter_complex '[0:a]afade=t=out:st=10:d=5[aud1]; [1:a]afade=t=in:st=0:d=5[aud2]; [aud1][aud2]concat=n=2:v=0:a=1[audio]' -map '[audio]' output_audio.mp3")
+    # Output the final concatenated audio to the specified file
+    ffmpeg.output(concatenated, output_file).run()
 
     return None
 
+def merge_audio_video(audio_file, video_file, save_path):
+    video_filename = video_file.split('.')[0]
+    probe = ffmpeg.probe(audio_file)
+    audio_duration = int(float(probe['format']['duration']))
 
-def merge_audio_video():
-    """-i video.mp4: Input video file.
-    -itsoffset 00:00:05: Starts the audio file 5 seconds into the video. Adjust 00:00:05 to your desired start time.
-    -i audio.mp3: Input audio file.
-    -map 0:v: Maps the video stream from the first input (video).
-    -map 1:a: Maps the audio stream from the second input (audio).
-    -c:v copy: Copies the video codec from the original.
-    -c:a aac: Encodes the audio to AAC.
-    output.mp4: The output file name."""
+    probe_video = ffmpeg.probe(video_file)
+    video_duration = int(float(probe_video['format']['duration']))
+    try:
+        assert audio_duration==video_duration
+    except AssertionError as msg:
+        print(msg)
 
-    command = "ffmpeg -i ./app/static/app/videos/video.mp4 -itsoffset 00:00:05 -i ./app/static/app/audios/output_audio.mp3 -map 0:v -map 1:a -c:v copy -c:a aac -strict experimental ./app/static/app/videos/output.mp4"
-    output = subprocess.run(
-        command,
-        shell=True,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    print("Command output:", output.stdout)
-
-    # os.system("ffmpeg -i video.mp4 -itsoffset 00:00:05 -i audio.mp3 -map 0:v -map 1:a -c:v copy -c:a aac -strict experimental output.mp4")
-
+    input_video = ffmpeg.input(video_file)
+    input_audio = ffmpeg.input(audio_file)
+    
+    # Merge the audio and video
+    ffmpeg.concat(input_video, input_audio, v=1, a=1).output(save_path+str('/')+'merged_'+video_filename+'.mp4').run() 
     return None
