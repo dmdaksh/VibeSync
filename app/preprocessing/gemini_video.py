@@ -141,6 +141,5 @@ class File:
     print(f"Completed file uploads!\n\nUploaded: {len(uploaded_files)} files")
     return uploaded_files
 
-response =Video.call_gemini("C:/MHacks 2024/VibeSync/app/static/app/videos/project_video.mp4")
+# response =Video.call_gemini("C:/MHacks 2024/VibeSync/app/static/app/videos/project_video.mp4")
 
-print(response)

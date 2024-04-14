@@ -19,7 +19,7 @@
         margin-top: 50px;
     }
 </style>
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <body>
     <div class="container">
         <h1 class="text-center pt-5">VibeSync: Enhance your videos with audio!</h1>
@@ -32,12 +32,23 @@
             <form method="post"></form>
             {% csrf_token %}
             <div class="d-flex w-full align-items-center">
+            
                 <div class="input-group mt-5 d-flex w-full align-items-center">
                     <!-- Input for file upload, with specific acceptance for video files -->
                     <input id="videoUpload" type="file" class="form-control flex-grow-1" style="min-width: 500px;"
                            accept="video/*" aria-label="Upload video" aria-describedby="button-addon2" placeholder="Upload video here...">
                     <!-- Button to trigger the file upload action -->
-                    <button id="submit" type="button" class="btn btn-outline-primary" onclick="submitVideo()">Submit</button>
+                   
+                    <button id="submit" type="button" class="btn btn-outline-primary" onclick="submitVideo()"> <i class="fa fa-arrow-up"></i></button>
+<!-- 
+                        <div class="wrapper">
+                    <div class="file-upload">
+                      <input type="file" class="form-control flex-grow-1" accept="video/*"/>
+                    
+              
+                      <i class="fa fa-arrow-up"></i>
+                    </div>
+                  </div> -->
                     <!-- Uncomment below if you need a Save button with additional functionality -->
                     <!-- <button id="saveBtn" type="button" class="btn btn-primary" onclick="submitReport()">Save</button> -->
                 </div>

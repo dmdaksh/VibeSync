@@ -4,13 +4,15 @@ import json
 import argparse
 from pytube import YouTube
 
-from app.preprocessing.gemini_video import *
+from urllib.parse import urlparse, parse_qs
+
+from app.preprocessing.gemini_video import Video
 
 def gemini_video_summary(video_url): 
     response = Video.call_gemini(video_url)
     return response
 
-from urllib.parse import urlparse, parse_qs
+
 
 def gemini_output_to_audio(yt_id, save_path="./app/static/app/audios"):
 
