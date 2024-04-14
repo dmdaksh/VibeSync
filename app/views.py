@@ -11,7 +11,7 @@ import re
 import requests
 import logging
 from .models import YouTubeVideo
-from utils import gemini_output_to_audio, gemini_video_summary, merge_audio_files
+from utils import gemini_output_to_audio, gemini_video_summary, process_and_concatenate_audios, merge_audio_video
 
 logger = logging.getLogger(__name__)
 # Add .env variables anywhere before SECRET_KEY
@@ -29,15 +29,21 @@ def index(request):
         if request_type == "upload":
             video_file = request.FILES.get('video', None)
             if video_file:
-                fs = FileSystemStorage(location=os.path.join(settings.BASE_DIR, 'app/static/app/videos'))
-                # filename = fs.save(settings.MEDIA_ROOT \ video_file.name, video_file)
-                # if file exists, delete it
-                if os.path.exists(os.path.join(settings.BASE_DIR, 'app/static/app/videos', video_file.name)):
-                    os.remove(os.path.join(settings.BASE_DIR, 'app/static/app/videos', video_file.name))
+                # Define the directory and filename
+                directory = os.path.join(settings.BASE_DIR, 'app/static/app/videos')
+                filename = 'video.mp4'  # Always use 'video.mp4' as the filename
 
-                filename = fs.save(video_file.name, video_file)
+                fs = FileSystemStorage(location=directory)
+                
+                # Check if 'video.mp4' exists, delete if it does
+                file_path = os.path.join(directory, filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
+                # Save the new file
+                fs.save(filename, video_file)
                 uploaded_file_url = fs.url(filename)
-                return JsonResponse({'message': 'Success', 'fileUrl': uploaded_file_url}, status=200)
+                return JsonResponse({'message': 'Video successfully uploaded', 'fileUrl': uploaded_file_url}, status=200)
             else:
                 return JsonResponse({'message': 'No file provided'}, status=400)
 
@@ -131,7 +137,7 @@ def get_youtube_link(request):
                 # youtube_urls.append("No results found")
                 youtube_urls[time_interval] = "No results found"
         
-        youtube_urls = json.dumps(youtube_urls)
+        # youtube_urls = json.dumps(youtube_urls)
         # print(youtube_urls)
         # return JsonResponse({"youtube_urls": youtube_urls})
 
@@ -141,9 +147,25 @@ def get_youtube_link(request):
 
         timestamp_video = {}
 
+        # remove everything inside /app/static/app/audios
+        for filename in os.listdir(save_path):
+            file_path = os.path.join(save_path, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(f"Error: {e}")
+
         for key, value in youtube_urls.items():
             yt_id = value.split('=')[-1]
             gemini_output_to_audio(yt_id, save_path)
-            timestamp_video[key] = f"audio_{yt_id}.mp3"
+            # timestamp_video[key] = f"audio_{yt_id}.mp3"
+            timestamp_video[key] = os.path.join(save_path, f"audio_{yt_id}.mp3")
+        
+        
+
+        process_and_concatenate_audios(timestamp_video)
+
+        merge_audio_video()
         
         return HttpResponse("Audio extracted successfully!", status=200)

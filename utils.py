@@ -1,3 +1,4 @@
+import os
 import argparse
 import json
 import subprocess
@@ -10,6 +11,9 @@ from app.constants import SYSTEM_INSTRUCTION
 import ffmpeg
 
 
+
+output_addr = "app/static/app/output/"
+video_addr = "app/static/app/videos/"
 
 def gemini_video_summary(video_url):
     # get system config from system config settings.py
@@ -46,7 +50,7 @@ def gemini_output_to_audio(yt_id, save_path="./app/static/app/audios"):
         print("Some error occured. Use non age-restricted videos please.")
 
 
-def process_and_concatenate_audios(time_audio_dict, output_file):
+def process_and_concatenate_audios(time_audio_dict ):
     """
     Crop each audio file according to the specified time steps and concatenate them.
 
@@ -57,27 +61,53 @@ def process_and_concatenate_audios(time_audio_dict, output_file):
     """
     # Prepare a list for storing individual audio segments
     segments = []
+
+    def time_to_secs(time_str):
+        m, s = map(int, time_str.split(':'))
+        return m * 60 + s
+
+    cross_fade_duration = 3
+
+    previous_end_time = time_to_secs('00:00')
   
     # Process each item in the dictionary
     for time_range, audio_path in time_audio_dict.items():
-        start_time, end_time = map(int, time_range.split('-'))
+        print(f'Processing {audio_path} for time range {time_range}')
+        start_time, end_time = map(time_to_secs, time_range.split(' - '))
         
         # Load the audio file and trim it according to the specified time range
-        audio_segment = ffmpeg.input(audio_path).audio.filter('atrim', start=0, end=end_time-start_time)
+        audio_segment = ffmpeg.input(audio_path).audio.filter('atrim', start=0, end=end_time-previous_end_time)
+        previous_end_time = end_time
         # Reset PTS to ensure correct concatenation
         # audio_segment = audio_segment.filter('aresample','100')
         audio_segment = audio_segment.filter('asetpts', 'PTS-STARTPTS')
         segments.append(audio_segment)
 
-    # Concatenate all audio segments
-    concatenated = ffmpeg.concat(*segments, v=0, a=1, unsafe=True)  # 'unsafe' is often required for different input streams
+    # # Concatenate all audio segments
+    # concatenated = ffmpeg.concat(*segments, v=0, a=1, unsafe=True)  # 'unsafe' is often required for different input streams
+    # Initialize the first segment
+    concatenated = segments[0]
+
+    # Apply cross-fade with the next segments
+    for next_segment in segments[1:]:
+        concatenated = ffmpeg.filter([concatenated, next_segment], 'acrossfade', d=cross_fade_duration)
+
 
     # Output the final concatenated audio to the specified file
-    ffmpeg.output(concatenated, output_file).run()
+
+    output_fk = os.path.join(output_addr, 'output.mp3')
+    if os.path.exists(output_fk):
+        os.remove(output_fk)
+    ffmpeg.output(concatenated, output_fk).run()
 
     return None
 
-def merge_audio_video(audio_file, video_file, save_path):
+def merge_audio_video():
+    video_file = os.path.join(video_addr, 'video.mp4')
+    save_path = os.path.join(video_addr, 'video_output.mp4')
+    if os.path.exists(save_path):
+        os.remove(save_path)
+    audio_file = os.path.join(output_addr, 'output.mp3')
     video_filename = video_file.split('.')[0]
     probe = ffmpeg.probe(audio_file)
     audio_duration = int(float(probe['format']['duration']))
@@ -93,5 +123,5 @@ def merge_audio_video(audio_file, video_file, save_path):
     input_audio = ffmpeg.input(audio_file)
     
     # Merge the audio and video
-    ffmpeg.concat(input_video, input_audio, v=1, a=1).output(save_path+str('/')+'merged_'+video_filename+'.mp4').run() 
+    ffmpeg.concat(input_video, input_audio, v=1, a=1).output(save_path).run() 
     return None

@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function(){
         var formData = new FormData();
         var videoFile = fileInput.files[0]; 
         console.log(formData);
-        formData.append('video', videoFile); 
+        formData.append('video', videoFile, "video.mp4"); 
         formData.append('csrfmiddlewaretoken', csrfToken); 
         formData.append('requestType', 'upload');
 
