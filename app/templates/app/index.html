@@ -172,7 +172,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 document.getElementsByClassName('loader')[0].remove();
                 document.getElementById('parent').appendChild(geminiResponse);
 
-                youtubeSearch(response.text);
+                // youtubeSearch(response.text);
+                youtubeSearch(response.gemini_json)
             },
             error: function(xhr, status, error) {
                 // Handle error response
@@ -184,18 +185,21 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     }
 
-    function youtubeSearch(textJson){
+    function youtubeSearch(geminiJson){
         var loader = document.createElement('div');
         loader.className = "loader";
         document.getElementById('parent').appendChild(loader);
 
         var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
-        var post_url = window.location.href;
+        var post_url = "{% url 'app:get_yt_link' %}"
+        // serialize geminiJson
+        geminiJson = JSON.stringify(geminiJson);
         var postData = {
-            'requestType': 'search',
-            'json': textJson,
+            // 'requestType': 'search',
+            'gemini_response': geminiJson,
             csrfmiddlewaretoken: csrfToken
         };
+        console.log(postData)
         // call yt search api
         $.ajax({
             type: 'POST',
@@ -211,7 +215,10 @@ document.addEventListener('DOMContentLoaded', function(){
                 console.log("ERROR");
             }
         });
+
+
     }
+
 });
 
 </script>

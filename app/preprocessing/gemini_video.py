@@ -80,6 +80,13 @@ class Video:
         model = genai.GenerativeModel(
             model_name="models/gemini-1.5-pro-latest",
             system_instruction=self.system_instruction,
+            safety_settings={
+                "HATE": "BLOCK_NONE",
+                "HARASSMENT": "BLOCK_NONE",
+                "SEXUAL": "BLOCK_NONE",
+                "DANGEROUS": "BLOCK_NONE",
+            },
+            generation_config={"temperature": 0.5},
         )
 
         # Make GenerateContent request with the structure described above.
@@ -89,10 +96,10 @@ class Video:
         request = Video.make_request(prompt, uploaded_files)
         response = model.generate_content(request, request_options={"timeout": 600})
 
-        print(f"Deleting {len(uploaded_files)} images. This might take a bit...")
-        for file in uploaded_files:
-            genai.delete_file(file.response.name)
-            print(f"Deleted {file.file_path} at URI {file.response.uri}")
+        # print(f"Deleting {len(uploaded_files)} images. This might take a bit...")
+        # for file in uploaded_files:
+        #     genai.delete_file(file.response.name)
+        #     print(f"Deleted {file.file_path} at URI {file.response.uri}")
         print(f"Completed deleting files!\n\nDeleted: {len(uploaded_files)} files")
         return response.text
 
