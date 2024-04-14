@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function(){
         var formData = new FormData();
         var videoFile = fileInput.files[0]; 
         console.log(formData);
-        formData.append('video', videoFile); 
+        formData.append('video', videoFile, "video.mp4"); 
         formData.append('csrfmiddlewaretoken', csrfToken); 
         formData.append('requestType', 'upload');
 
@@ -297,19 +297,57 @@ document.addEventListener('DOMContentLoaded', function(){
             success: function(response) {
                 // document.getElementsByClassName("loader").rem
                 var geminiResponse = document.createElement('div');
-                geminiResponse.innerHTML = `<p>${response.text}</p>`;
+                geminiResponse.innerHTML = `<p>Gemini has done it's job. Now waiting for the rest...</p>`;
                 document.getElementsByClassName('loader')[0].remove();
-                document.getElementById('parent').appendChild(geminiResponse)
+                document.getElementById('parent').appendChild(geminiResponse);
+
+                // youtubeSearch(response.text);
+                youtubeSearch(response.gemini_json)
             },
-        error: function(xhr, status, error) {
-            // Handle error response
-            console.error(xhr.responseText);
-            console.log("ERROR");
-            document.getElementById('submitVideo').style.display = "block";
-            document.getElementById('video').style.display = "block";
-        }
-    });
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error(xhr.responseText);
+                console.log("ERROR");
+                document.getElementById('submitVideo').style.display = "block";
+                document.getElementById('video').style.display = "block";
+            }
+        });
     }
+
+    function youtubeSearch(geminiJson){
+        var loader = document.createElement('div');
+        loader.className = "loader";
+        document.getElementById('parent').appendChild(loader);
+
+        var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        var post_url = "{% url 'app:get_yt_link' %}"
+        // serialize geminiJson
+        geminiJson = JSON.stringify(geminiJson);
+        var postData = {
+            // 'requestType': 'search',
+            'gemini_response': geminiJson,
+            csrfmiddlewaretoken: csrfToken
+        };
+        console.log(postData)
+        // call yt search api
+        $.ajax({
+            type: 'POST',
+            url: post_url, // Replace with your server endpoint URL
+            data: postData,
+            success: function(response) {
+                // document.getElementsByClassName("loader").rem
+                // alert("Great success");
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error(xhr.responseText);
+                console.log("ERROR");
+            }
+        });
+
+
+    }
+
 });
 
 </script>

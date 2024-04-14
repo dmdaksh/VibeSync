@@ -36,4 +36,3 @@ To get this app locally up and running, follow the steps below.
   docker-compose up
   ```
 - The app will be running on `http://localhost:8000`
-
