@@ -31,7 +31,7 @@ def update_task_status(code, message):
     task_status['status_code'] = code
     task_status['message'] = message
 
-def get_task_status(request):
+def get_status(request):
     return JsonResponse(task_status)
 
 def index(request):
