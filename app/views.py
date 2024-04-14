@@ -3,6 +3,7 @@ import os
 import dotenv  # <- New
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.core.files.storage import FileSystemStorage
 
 import requests
 from .models import YouTubeVideo
@@ -17,7 +18,19 @@ if os.path.isfile(dotenv_file):
 YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]  # Instead of your actual secret key
 
 
-def index(request):
+def upload_video(request):
+    if request.method == "POST":
+        video_file = request.FILES.get('video', '')
+        if video_file:
+            fs = FileSystemStorage()
+            filename = fs.save(video_file.name, video_file)
+            uploaded_file_url = fs.url(filename)
+            return JsonResponse({'message': 'Success', 'fileUrl': uploaded_file_url}, status=200)
+        else:
+            return JsonResponse({'message': 'No file provided'}, status=400)
+                # get file from form
+            # save video and call gemini api
+
     return render(request, 'app/index.html')
 
 def get_youtube_link(request, search_query: str):
