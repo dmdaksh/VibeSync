@@ -3,11 +3,15 @@ import os
 import dotenv  # <- New
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.core.files.storage import FileSystemStorage
+from VibeSync import settings
 
 import requests
+import logging
 from .models import YouTubeVideo
-from utils import gemini_output_to_audio
+from utils import gemini_output_to_audio, gemini_video_summary
 
+logger = logging.getLogger(__name__)
 # Add .env variables anywhere before SECRET_KEY
 dotenv_file = os.path.join(".", ".env")
 if os.path.isfile(dotenv_file):
@@ -18,6 +22,31 @@ YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]  # Instead of your actual secret
 
 
 def index(request):
+    if request.method == "POST":
+        request_type = request.POST.get('requestType', '')
+        if request_type == "upload":
+            video_file = request.FILES.get('video', None)
+            if video_file:
+                fs = FileSystemStorage(location=os.path.join(settings.BASE_DIR, 'app/static/app/videos'))
+                # filename = fs.save(settings.MEDIA_ROOT \ video_file.name, video_file)
+                filename = fs.save(video_file.name, video_file)
+                uploaded_file_url = fs.url(filename)
+                return JsonResponse({'message': 'Success', 'fileUrl': uploaded_file_url}, status=200)
+            else:
+                return JsonResponse({'message': 'No file provided'}, status=400)
+
+        elif request_type == "gemini":
+            # gemini integration
+            file_url = request.POST.get('file_url', '')
+            if file_url != '':
+                video_path = os.path.join(settings.BASE_DIR, f'app/static/app/videos{file_url}')
+                gemini_response = gemini_video_summary(video_path)
+                return JsonResponse({'message': 'Success', 'text': gemini_response}, status=200)
+            else:
+                return JsonResponse({'message': 'File not found in server'}, status=400)
+
+
+
     return render(request, 'app/index.html')
 
 def get_youtube_link(request, search_query: str):

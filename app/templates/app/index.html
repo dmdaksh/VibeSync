@@ -18,44 +18,172 @@
         padding: 20px; /* Padding inside the rectangle */
         margin-top: 50px;
     }
+    .loader {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3B71CA;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    50% {
+        transform: rotate(300deg);
+    }
+    66% {
+        transform: rotate(270deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+    }
 </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<body>
-    <div class="container">
-        <h1 class="text-center pt-5">VibeSync: Enhance your videos with audio!</h1>
-        <hr>
-        <!-- <div class="rounded-rectangle consent-text mb-5">
-            <p>Welcome to Vibesync! Please enter your video to proceed</p>
-        </div> -->
-        <!-- <img src="{% static 'app/images/logo.png' %}" alt="Logo" width="200px" height="auto" class="d-inline-block justify-content-center align-text-top"> -->
-        <div class="d-flex flex-row justify-content-center mx-lg-auto max-lg-w-2xl max-xl-w-3xl">
-            <form method="post"></form>
-            {% csrf_token %}
+
+<div id="parent" class="container">
+    <h1 class="text-center pt-5" style="color: ;">VibeSync: Enhance your videos with audio!</h1>
+    <hr>
+    <!-- <div class="rounded-rectangle consent-text mb-5">
+        <p>Welcome to Vibesync! Please enter your video to proceed</p>
+    </div> -->
+    <!-- <img src="{% static 'app/images/logo.png' %}" alt="Logo" width="200px" height="auto" class="d-inline-block justify-content-center align-text-top"> -->
+    <div class="d-flex flex-row justify-content-center mx-lg-auto max-lg-w-2xl max-xl-w-3xl">
+        <form method="post" id="id_videoform" enctype="multipart/form-data">
+        {% csrf_token %}
             <div class="d-flex w-full align-items-center">
             
                 <div class="input-group mt-5 d-flex w-full align-items-center">
                     <!-- Input for file upload, with specific acceptance for video files -->
-                    <input id="videoUpload" type="file" class="form-control flex-grow-1" style="min-width: 500px;"
-                           accept="video/*" aria-label="Upload video" aria-describedby="button-addon2" placeholder="Upload video here...">
+                    <input id="video" type="file" class="form-control flex-grow-1" style="min-width: 500px;"
+                            accept="video/*" aria-label="Upload video" placeholder="Upload video here...">
                     <!-- Button to trigger the file upload action -->
-                   
-                    <button id="submit" type="button" class="btn btn-outline-primary" onclick="submitVideo()"> <i class="fa fa-arrow-up"></i></button>
-<!-- 
-                        <div class="wrapper">
-                    <div class="file-upload">
-                      <input type="file" class="form-control flex-grow-1" accept="video/*"/>
-                    
-              
-                      <i class="fa fa-arrow-up"></i>
-                    </div>
-                  </div> -->
+                    <button id="submitVideo" type="button" class="btn btn-outline-primary">
+                        <i class="bi bi-camera-video" id="submitButton" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload video"></i> Submit Video
+                    </button>
+                    {{ form.file }}
                     <!-- Uncomment below if you need a Save button with additional functionality -->
                     <!-- <button id="saveBtn" type="button" class="btn btn-primary" onclick="submitReport()">Save</button> -->
                 </div>
             </div>
-        </div>
+        </form>
+        <div id="videoContainer"></div>
+        <!-- <div id="gemini">
+            <button id="submitRequest" type="button" class="btn btn-outline-primary">
+                 Submit Video
+            </button>
+        </div> -->
     </div>
-</body>
+</div>
 {% endblock %}
 {% block script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    
+    document.getElementById('submitVideo').addEventListener("click", function(event) {
+        event.preventDefault(); // prevent default submit behavior
+        console.log("video saved");
+        var post_url = window.location.href;
+        var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        var fileInput = document.getElementById('video');
+
+        if (fileInput.files.length !== 1) {
+            alert("Please upload a video file. (Limit 1)");
+            return; // Stop the function if not exactly one file is uploaded
+        }
+
+        var formData = new FormData();
+        var videoFile = fileInput.files[0]; 
+        console.log(formData);
+        formData.append('video', videoFile); 
+        formData.append('csrfmiddlewaretoken', csrfToken); 
+        formData.append('requestType', 'upload');
+
+        // Submit the form data via AJAX
+        $.ajax({
+            type: 'POST',
+            url: post_url, // Replace with your server endpoint URL
+            data: formData,
+            processData: false, // Prevent jQuery from converting the FormData into a string
+            contentType: false, // Let the browser set the content type
+            success: function(response) {
+                console.log("Video uploaded successfully");
+                document.getElementById('submitVideo').style.display = "none";
+                document.getElementById('video').style.display = "none";
+
+                var videoContainer = document.getElementById('videoContainer');
+                if (!videoContainer) {
+                    videoContainer = document.createElement('div');
+                    videoContainer.id = 'videoContainer';
+                    document.body.appendChild(videoContainer);
+                }
+                console.log(response.fileUrl)
+                // Create and append the video element
+                var video = document.createElement('video');
+                video.src = "{% static 'app/videos' %}" + response.fileUrl;
+                video.width = 320;
+                video.height = 240;
+                video.controls = true;
+                video.autoplay = true;  // Optional: play as soon as loaded
+
+                // Clear previous videos if any and add new video
+                videoContainer.innerHTML = '';  
+                videoContainer.appendChild(video); 
+                gemini(response.fileUrl);
+                // // add gemini api call
+                // var gemini = document.createElement('div');
+                // gemini.appendChild('')
+                // parent.appendChild();
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error(xhr.responseText);
+                console.log("ERROR");
+                document.getElementById('submitVideo').style.display = "block";
+                document.getElementById('video').style.display = "block";
+            }
+        });
+
+    });
+
+    function gemini(fileUrl){
+        var loader = document.createElement('div');
+        loader.className = "loader";
+        document.getElementById('parent').appendChild(loader);
+
+        var csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        var post_url = window.location.href;
+        var postData = {
+            'requestType': 'gemini',
+            'file_url': fileUrl,
+            csrfmiddlewaretoken: csrfToken
+        };
+        // call gemini api
+        $.ajax({
+            type: 'POST',
+            url: post_url, // Replace with your server endpoint URL
+            data: postData,
+            success: function(response) {
+                // document.getElementsByClassName("loader").rem
+                var geminiResponse = document.createElement('div');
+                geminiResponse.innerHTML = `<p>${response.text}</p>`;
+                document.getElementsByClassName('loader')[0].remove();
+                document.getElementById('parent').appendChild(geminiResponse)
+            },
+        error: function(xhr, status, error) {
+            // Handle error response
+            console.error(xhr.responseText);
+            console.log("ERROR");
+            document.getElementById('submitVideo').style.display = "block";
+            document.getElementById('video').style.display = "block";
+        }
+    });
+    }
+});
+
+</script>
+
 {% endblock %}
