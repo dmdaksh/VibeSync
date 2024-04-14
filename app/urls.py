@@ -3,5 +3,5 @@ from . import views
 
 urlpatterns = [
     # Paths for pilot:
-    path('', views.index, name='index'),
+    path('', views.upload_video, name='upload_video'),
 ]
