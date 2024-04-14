@@ -161,3 +161,6 @@ cython_debug/
 
 # exclude .vscode
 .vscode/
+
+# exclude static audios 
+app/static/app/audios/
