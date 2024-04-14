@@ -11,13 +11,13 @@ genai.configure(api_key=GOOGLE_API_KEY)
 
 
 # video_file_name = "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
-file_url= "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
+# file_url= "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
 
-video_file_name = f"{file_url}"
+# video_file_name = f"{file_url}"
 
 
 # Create or cleanup existing extracted image frames directory.
-FRAME_EXTRACTION_DIRECTORY = "../static/app/images/content/frames"
+FRAME_EXTRACTION_DIRECTORY = "C:/MHacks 2024/VibeSync/app/static/app/images/content/frames/"
 FRAME_PREFIX = "_frame"
 
 class Video:
@@ -40,14 +40,19 @@ class Video:
     count = 0
     while vidcap.isOpened():
         success, frame = vidcap.read()
+      
         if not success: # End of video
             break
         if int(count / fps) == frame_count: # Extract a frame every second
             min = frame_count // 60
             sec = frame_count % 60
-            time_string = f"{min:02d}:{sec:02d}"
+            time_string = f"{min:02d}_{sec:02d}"
             image_name = f"{output_file_prefix}{FRAME_PREFIX}{time_string}.jpg"
+        
+           
+
             output_filename = os.path.join(FRAME_EXTRACTION_DIRECTORY, image_name)
+        
             cv2.imwrite(output_filename, frame)
             frame_count += 1
         count += 1
@@ -136,4 +141,6 @@ class File:
     print(f"Completed file uploads!\n\nUploaded: {len(uploaded_files)} files")
     return uploaded_files
 
+response =Video.call_gemini("C:/MHacks 2024/VibeSync/app/static/app/videos/project_video.mp4")
 
+print(response)
