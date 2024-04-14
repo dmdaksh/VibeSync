@@ -14,7 +14,8 @@ from app.constants import SYSTEM_INSTRUCTION
 def gemini_video_summary(video_url):
     # get system config from system config settings.py
     video = Video(system_instruction=SYSTEM_INSTRUCTION)
-    response = Video.call_gemini(video_url)
+    print(video_url)
+    response = video.call_gemini(video_url)
     return response
 
 

@@ -90,20 +90,21 @@ class Video:
             system_instruction=self.system_instruction,
         )
 
-  # Make GenerateContent request with the structure described above.
-  
-    uploaded_files = File.process_frame()
-    # Make the LLM request.
-    request = Video.make_request(prompt, uploaded_files)
-    response = model.generate_content(request,request_options={"timeout": 600})
+        # Make GenerateContent request with the structure described above.
 
-    print(f'Deleting {len(uploaded_files)} images. This might take a bit...')
-    for file in uploaded_files:
-      genai.delete_file(file.response.name)
-      print(f'Deleted {file.file_path} at URI {file.response.uri}')
-    print(f"Completed deleting files!\n\nDeleted: {len(uploaded_files)} files")
-    return response.text
-      
+        uploaded_files = File.process_frame()
+        # Make the LLM request.
+        request = Video.make_request(prompt, uploaded_files)
+        response = model.generate_content(request, request_options={"timeout": 600})
+        print(response.text)
+
+        print(f"Deleting {len(uploaded_files)} images. This might take a bit...")
+        for file in uploaded_files:
+            genai.delete_file(file.response.name)
+            print(f"Deleted {file.file_path} at URI {file.response.uri}")
+        print(f"Completed deleting files!\n\nDeleted: {len(uploaded_files)} files")
+        return response
+
 
 class File:
     def __init__(self, file_path: str, display_name: str = None):
